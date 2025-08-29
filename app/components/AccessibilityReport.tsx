@@ -1,3 +1,9 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { ExternalLink, AlertCircle, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+
 interface AccessibilityViolation {
   id: string;
   impact: 'minor' | 'moderate' | 'serious' | 'critical';
@@ -28,18 +34,27 @@ interface AccessibilityReportProps {
   report: AccessibilityReport;
 }
 
-const impactColors = {
-  minor: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  moderate: 'bg-orange-100 text-orange-800 border-orange-200',
-  serious: 'bg-red-100 text-red-800 border-red-200',
-  critical: 'bg-red-200 text-red-900 border-red-300'
-};
-
-const impactIcons = {
-  minor: '⚠️',
-  moderate: '🟠',
-  serious: '🔴',
-  critical: '🚨'
+const impactConfig = {
+  minor: { 
+    variant: 'secondary' as const, 
+    icon: AlertTriangle, 
+    color: 'text-yellow-600' 
+  },
+  moderate: { 
+    variant: 'default' as const, 
+    icon: AlertCircle, 
+    color: 'text-orange-600' 
+  },
+  serious: { 
+    variant: 'destructive' as const, 
+    icon: XCircle, 
+    color: 'text-red-600' 
+  },
+  critical: { 
+    variant: 'destructive' as const, 
+    icon: XCircle, 
+    color: 'text-red-700' 
+  }
 };
 
 export default function AccessibilityReport({ report }: AccessibilityReportProps) {
@@ -63,179 +78,174 @@ export default function AccessibilityReport({ report }: AccessibilityReportProps
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          Accessibility Test Results
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {totalIssues}
-            </div>
-            <div className="text-sm text-blue-600 dark:text-blue-400">Total Issues</div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Accessibility Test Results</CardTitle>
+          <CardDescription>
+            URL: {report.url} • Tested on: {new Date(report.timestamp).toLocaleString()}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-primary">{totalIssues}</div>
+                <div className="text-sm text-muted-foreground">Total Issues</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-red-600">{criticalIssues}</div>
+                <div className="text-sm text-muted-foreground">Critical</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-orange-600">{seriousIssues}</div>
+                <div className="text-sm text-muted-foreground">Serious</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-yellow-600">{moderateIssues}</div>
+                <div className="text-sm text-muted-foreground">Moderate</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-green-600">{minorIssues}</div>
+                <div className="text-sm text-muted-foreground">Minor</div>
+              </CardContent>
+            </Card>
           </div>
-          
-          <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {criticalIssues}
-            </div>
-            <div className="text-sm text-red-600 dark:text-red-400">Critical</div>
-          </div>
-          
-          <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              {seriousIssues}
-            </div>
-            <div className="text-sm text-orange-600 dark:text-orange-400">Serious</div>
-          </div>
-          
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-              {moderateIssues}
-            </div>
-            <div className="text-sm text-yellow-600 dark:text-yellow-400">Moderate</div>
-          </div>
-          
-          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {minorIssues}
-            </div>
-            <div className="text-sm text-green-600 dark:text-green-400">Minor</div>
-          </div>
-        </div>
-
-        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          <span className="font-medium">URL:</span> {report.url}
-          <br />
-          <span className="font-medium">Tested on:</span> {new Date(report.timestamp).toLocaleString()}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {totalIssues === 0 ? (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
-          <div className="flex items-center">
-            <div className="text-4xl mr-4">🎉</div>
-            <div>
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-400">
-                Congratulations!
-              </h3>
-              <p className="text-green-700 dark:text-green-300">
-                No accessibility violations were found on this page.
-              </p>
-            </div>
-          </div>
-        </div>
+        <Alert>
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription className="font-semibold">
+            🎉 Congratulations! No accessibility violations were found on this page.
+          </AlertDescription>
+        </Alert>
       ) : (
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-xl font-semibold">
             Accessibility Violations
           </h3>
           
-          {report.violations.map((violation, index) => (
-            <div 
-              key={violation.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border-l-4 border-red-500"
-            >
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{impactIcons[violation.impact]}</span>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {violation.help}
-                      </h4>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={`px-2 py-1 text-xs font-medium rounded border ${impactColors[violation.impact]}`}>
-                          {violation.impact.toUpperCase()}
-                        </span>
-                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 rounded">
-                          {getWcagLevel(violation.tags)}
-                        </span>
+          {report.violations.map((violation, index) => {
+            const ImpactIcon = impactConfig[violation.impact].icon;
+            return (
+              <Card key={violation.id} className="border-l-4 border-l-destructive">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <ImpactIcon className={`h-6 w-6 ${impactConfig[violation.impact].color}`} />
+                      <div>
+                        <CardTitle className="text-lg">{violation.help}</CardTitle>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Badge variant={impactConfig[violation.impact].variant}>
+                            {violation.impact.toUpperCase()}
+                          </Badge>
+                          <Badge variant="outline">
+                            WCAG {getWcagLevel(violation.tags)}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
+                    
+                    <a
+                      href={violation.helpUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-sm font-medium text-primary hover:text-primary/80"
+                    >
+                      Learn more <ExternalLink className="ml-1 h-3 w-3" />
+                    </a>
                   </div>
-                  
-                  <a
-                    href={violation.helpUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                  >
-                    Learn more →
-                  </a>
-                </div>
-
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  {violation.description}
-                </p>
-
-                <div className="mb-4">
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-                    WCAG Criteria:
-                  </h5>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {getWcagCriteria(violation.tags) || 'Not specified'}
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    {violation.description}
                   </p>
-                </div>
 
-                <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-                    Affected Elements ({violation.nodes.length}):
-                  </h5>
-                  <div className="space-y-2">
-                    {violation.nodes.slice(0, 3).map((node, nodeIndex) => (
-                      <div 
-                        key={nodeIndex}
-                        className="bg-gray-50 dark:bg-gray-700 p-3 rounded border"
-                      >
-                        <div className="text-sm font-mono text-gray-800 dark:text-gray-200 mb-1">
-                          Selector: {node.target.join(', ')}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          {node.failureSummary}
-                        </div>
-                        <details className="text-xs">
-                          <summary className="cursor-pointer text-gray-500 hover:text-gray-700">
-                            View HTML
-                          </summary>
-                          <pre className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded overflow-x-auto">
-                            <code>{node.html}</code>
-                          </pre>
-                        </details>
-                      </div>
-                    ))}
-                    {violation.nodes.length > 3 && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        ... and {violation.nodes.length - 3} more elements
-                      </div>
-                    )}
+                  <div className="mb-4">
+                    <h5 className="font-medium mb-2">WCAG Criteria:</h5>
+                    <p className="text-sm text-muted-foreground">
+                      {getWcagCriteria(violation.tags) || 'Not specified'}
+                    </p>
                   </div>
-                </div>
-              </div>
-            </div>
-          ))}
+
+                  <Separator className="my-4" />
+
+                  <div>
+                    <h5 className="font-medium mb-2">
+                      Affected Elements ({violation.nodes.length}):
+                    </h5>
+                    <div className="space-y-2">
+                      {violation.nodes.slice(0, 3).map((node, nodeIndex) => (
+                        <Card key={nodeIndex} className="bg-muted/50">
+                          <CardContent className="pt-3">
+                            <div className="text-sm font-mono mb-1">
+                              <span className="font-medium">Selector:</span> {node.target.join(', ')}
+                            </div>
+                            <div className="text-sm text-muted-foreground mb-2">
+                              {node.failureSummary}
+                            </div>
+                            <details className="text-xs">
+                              <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                                View HTML
+                              </summary>
+                              <pre className="mt-2 p-2 bg-muted rounded overflow-x-auto">
+                                <code>{node.html}</code>
+                              </pre>
+                            </details>
+                          </CardContent>
+                        </Card>
+                      ))}
+                      {violation.nodes.length > 3 && (
+                        <div className="text-sm text-muted-foreground">
+                          ... and {violation.nodes.length - 3} more elements
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
       {report.passes.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-green-600 dark:text-green-400 mb-4">
-            ✅ Passed Tests ({report.passes.length})
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {report.passes.slice(0, 10).map((pass, index) => (
-              <div key={pass.id} className="text-sm text-gray-600 dark:text-gray-400">
-                • {pass.help}
-              </div>
-            ))}
-            {report.passes.length > 10 && (
-              <div className="text-sm text-gray-500 dark:text-gray-400 col-span-2">
-                ... and {report.passes.length - 10} more passed tests
-              </div>
-            )}
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-green-600">
+              <CheckCircle className="mr-2 h-5 w-5" />
+              Passed Tests ({report.passes.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {report.passes.slice(0, 10).map((pass, index) => (
+                <div key={pass.id} className="text-sm text-muted-foreground flex items-center">
+                  <CheckCircle className="mr-2 h-3 w-3 text-green-600 flex-shrink-0" />
+                  {pass.help}
+                </div>
+              ))}
+              {report.passes.length > 10 && (
+                <div className="text-sm text-muted-foreground col-span-2">
+                  ... and {report.passes.length - 10} more passed tests
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
