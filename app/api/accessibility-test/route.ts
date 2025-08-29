@@ -1,5 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JSDOM } from 'jsdom';
+import FirecrawlApp from '@mendable/firecrawl-js';
+
+// TypeScript interfaces for accessibility check results
+interface AccessibilityNode {
+  html: string;
+  target: string[];
+  failureSummary: string;
+}
+
+interface AccessibilityViolation {
+  id: string;
+  impact: string;
+  description: string;
+  help: string;
+  helpUrl: string;
+  tags: string[];
+  nodes: AccessibilityNode[];
+}
+
+interface AccessibilityPass {
+  id: string;
+  description: string;
+  help: string;
+}
+
+interface AccessibilityResult {
+  violations: AccessibilityViolation[];
+  passes: AccessibilityPass[];
+  incomplete: AccessibilityViolation[];
+}
 
 // Utility functions for color contrast analysis
 function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
@@ -65,15 +95,15 @@ function parseColor(colorStr: string): { r: number, g: number, b: number } | nul
 }
 
 // Comprehensive accessibility checks based on WCAG guidelines (WAVE-like analysis)
-function runAccessibilityChecks(document: Document): any {
-  const violations: any[] = [];
-  const passes: any[] = [];
-  const incomplete: any[] = [];
+function runAccessibilityChecks(document: Document): AccessibilityResult {
+  const violations: AccessibilityViolation[] = [];
+  const passes: AccessibilityPass[] = [];
+  const incomplete: AccessibilityViolation[] = [];
 
   // Check 1: Images without alt text (WCAG 1.1.1)
   const images = document.querySelectorAll('img');
-  const imagesWithoutAlt: any[] = [];
-  const decorativeImages: any[] = [];
+  const imagesWithoutAlt: AccessibilityNode[] = [];
+  const decorativeImages: AccessibilityNode[] = [];
   
   images.forEach((img, index) => {
     const alt = img.getAttribute('alt');
@@ -108,9 +138,9 @@ function runAccessibilityChecks(document: Document): any {
 
   // Check 2: Comprehensive form validation (WCAG 1.3.1, 3.3.2, 4.1.2)
   const formElements = document.querySelectorAll('input, textarea, select');
-  const elementsWithoutLabels: any[] = [];
-  const elementsWithoutRequiredIndicator: any[] = [];
-  const elementsWithPoorLabels: any[] = [];
+  const elementsWithoutLabels: AccessibilityNode[] = [];
+  const elementsWithoutRequiredIndicator: AccessibilityNode[] = [];
+  const elementsWithPoorLabels: AccessibilityNode[] = [];
 
   formElements.forEach((element, index) => {
     const tagName = element.tagName.toLowerCase();
@@ -187,14 +217,15 @@ function runAccessibilityChecks(document: Document): any {
 
   // Check 3: Empty buttons and poor button text (WCAG 4.1.2, 2.4.4)
   const buttons = document.querySelectorAll('button, input[type="button"], input[type="submit"], input[type="reset"]');
-  const buttonsWithoutText: any[] = [];
-  const buttonsWithPoorText: any[] = [];
+  const buttonsWithoutText: AccessibilityNode[] = [];
+  const buttonsWithPoorText: AccessibilityNode[] = [];
 
   buttons.forEach((button, index) => {
     const text = button.textContent?.trim();
     const value = button.getAttribute('value')?.trim();
     const ariaLabel = button.getAttribute('aria-label');
     const ariaLabelledby = button.getAttribute('aria-labelledby');
+    // Note: ariaLabelledby would be used for more complex labeling scenarios
     const title = button.getAttribute('title');
     
     const accessibleText = text || value || ariaLabel || title;
@@ -240,15 +271,16 @@ function runAccessibilityChecks(document: Document): any {
 
   // Check 4: Link quality analysis (WCAG 2.4.4)
   const links = document.querySelectorAll('a[href]');
-  const linksWithoutText: any[] = [];
-  const linksWithPoorText: any[] = [];
-  const linksWithSameText: any[] = [];
+  const linksWithoutText: AccessibilityNode[] = [];
+  const linksWithPoorText: AccessibilityNode[] = [];
+  const linksWithSameText: AccessibilityNode[] = [];
   const linkTexts = new Map();
 
   links.forEach((link, index) => {
     const text = link.textContent?.trim();
     const ariaLabel = link.getAttribute('aria-label');
     const ariaLabelledby = link.getAttribute('aria-labelledby');
+    // Note: ariaLabelledby would be used for more complex labeling scenarios
     const title = link.getAttribute('title');
     const href = link.getAttribute('href');
     
@@ -313,7 +345,7 @@ function runAccessibilityChecks(document: Document): any {
 
   // Check 5: Basic color contrast estimation (WCAG 1.4.3, 1.4.6)
   const textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div, a, button, label, li');
-  const contrastIssues: any[] = [];
+  const contrastIssues: AccessibilityNode[] = [];
 
   textElements.forEach((element, index) => {
     const computedStyle = element.getAttribute('style') || '';
@@ -366,6 +398,7 @@ function runAccessibilityChecks(document: Document): any {
   const htmlElement = document.documentElement;
   const metaViewport = document.querySelector('meta[name="viewport"]');
   const skipLinks = document.querySelectorAll('a[href^="#"]');
+  // Note: skipLinks could be used for additional navigation checks
 
   if (!title || !title.textContent?.trim()) {
     violations.push({
@@ -448,8 +481,8 @@ function runAccessibilityChecks(document: Document): any {
   // Check 7: Heading hierarchy (WCAG 1.3.1)
   const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const headingLevels: number[] = [];
-  const skippedHeadings: any[] = [];
-  const emptyHeadings: any[] = [];
+  const skippedHeadings: AccessibilityNode[] = [];
+  const emptyHeadings: AccessibilityNode[] = [];
   
   headings.forEach((heading, index) => {
     const level = parseInt(heading.tagName.charAt(1));
@@ -503,8 +536,8 @@ function runAccessibilityChecks(document: Document): any {
 
   // Check 8: Table accessibility (WCAG 1.3.1)
   const tables = document.querySelectorAll('table');
-  const tablesWithoutHeaders: any[] = [];
-  const tablesWithoutCaption: any[] = [];
+  const tablesWithoutHeaders: AccessibilityNode[] = [];
+  const tablesWithoutCaption: AccessibilityNode[] = [];
 
   tables.forEach((table, index) => {
     const headers = table.querySelectorAll('th');
@@ -592,27 +625,55 @@ export async function POST(request: NextRequest) {
 
     console.log('Fetching URL:', url);
 
-    // Fetch the HTML content directly
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+    let html: string;
+    
+    // Try Firecrawl first, fallback to regular fetch
+    try {
+      if (process.env.FIRECRAWL_API_KEY) {
+        console.log('Using Firecrawl to fetch content...');
+        const app = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY });
+        
+        const scrapeResult = await app.scrapeUrl(url, {
+          formats: ['html'],
+          onlyMainContent: false, // Keep full page for accessibility testing
+          waitFor: 3000, // Wait for JS to render
+          timeout: 30000
+        });
+        
+        if (scrapeResult.success && scrapeResult.html) {
+          html = scrapeResult.html;
+          console.log('HTML fetched via Firecrawl, length:', html.length);
+        } else {
+          throw new Error('Firecrawl failed to scrape the URL');
+        }
+      } else {
+        throw new Error('Firecrawl API key not configured');
       }
-    });
+    } catch (firecrawlError) {
+      console.log('Firecrawl failed, falling back to direct fetch:', firecrawlError);
+      
+      // Fallback to original fetch method
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Accept-Encoding': 'gzip, deflate',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: `Unable to fetch the URL. Server responded with status: ${response.status}` },
-        { status: 400 }
-      );
+      if (!response.ok) {
+        return NextResponse.json(
+          { error: `Unable to fetch the URL. Server responded with status: ${response.status}` },
+          { status: 400 }
+        );
+      }
+
+      html = await response.text();
+      console.log('HTML fetched via direct fetch, length:', html.length);
     }
-
-    const html = await response.text();
-    console.log('HTML fetched, length:', html.length);
 
     // Create JSDOM instance
     const dom = new JSDOM(html, {
@@ -633,32 +694,33 @@ export async function POST(request: NextRequest) {
     // Format the response
     const report = {
       url: url,
-      violations: results.violations.map((violation: any) => ({
+      crawlMethod: process.env.FIRECRAWL_API_KEY ? 'firecrawl' : 'direct-fetch',
+      violations: results.violations.map((violation) => ({
         id: violation.id,
         impact: violation.impact,
         description: violation.description,
         help: violation.help,
         helpUrl: violation.helpUrl,
         tags: violation.tags,
-        nodes: violation.nodes.map((node: any) => ({
+        nodes: violation.nodes.map((node) => ({
           html: node.html,
           target: node.target,
           failureSummary: node.failureSummary || ''
         })).slice(0, 5) // Limit to first 5 nodes per violation
       })),
-      passes: results.passes.map((pass: any) => ({
+      passes: results.passes.map((pass) => ({
         id: pass.id,
         description: pass.description,
         help: pass.help
       })),
-      incomplete: results.incomplete.map((incomplete: any) => ({
+      incomplete: results.incomplete.map((incomplete) => ({
         id: incomplete.id,
         impact: incomplete.impact,
         description: incomplete.description,
         help: incomplete.help,
         helpUrl: incomplete.helpUrl,
         tags: incomplete.tags,
-        nodes: incomplete.nodes.map((node: any) => ({
+        nodes: incomplete.nodes.map((node) => ({
           html: node.html,
           target: node.target,
           failureSummary: node.failureSummary || ''

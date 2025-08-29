@@ -5,7 +5,12 @@
       "Bash(npm run dev:*)",
       "Bash(npx:*)",
       "Bash(npm run build:*)",
-      "Bash(NODE_ENV=production npx next build --no-lint --no-mangling)"
+      "Bash(NODE_ENV=production npx next build --no-lint --no-mangling)",
+      "Bash(lsof:*)",
+      "Bash(taskkill:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run lint)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

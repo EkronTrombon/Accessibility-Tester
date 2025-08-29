@@ -10,7 +10,7 @@ export default function DemoPage() {
         
         <p>This page contains various accessibility issues for demonstration purposes.</p>
         
-        {/* Missing alt text */}
+        {/* Missing alt text - intentionally left without alt for demo */}
         <img src="/next.svg" width="100" height="50" />
         
         {/* Poor color contrast */}

@@ -1,17 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Accessibility Tester
 
-## Getting Started
+A comprehensive web accessibility testing tool built with Next.js that analyzes websites for WCAG compliance issues. This tool can test both static HTML and JavaScript-rendered content using Firecrawl integration.
 
-First, run the development server:
+## Features
+
+- **Comprehensive WCAG Testing**: Tests for 15+ accessibility violations including images without alt text, form labels, color contrast, heading structure, and more
+- **JavaScript-Enabled Testing**: Uses Firecrawl API to test fully rendered pages including SPAs and dynamic content
+- **Fallback Support**: Automatically falls back to direct HTML fetch if Firecrawl is unavailable
+- **Detailed Reports**: Provides actionable insights with links to WCAG documentation
+- **Modern UI**: Clean, responsive interface with dark/light mode support
+
+## Setup
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Firecrawl (Optional but Recommended)
+
+To enable JavaScript-rendered content testing:
+
+1. Get a Firecrawl API key from [firecrawl.dev](https://firecrawl.dev)
+2. Add it to your `.env.local` file:
+
+```bash
+FIRECRAWL_API_KEY=your_firecrawl_api_key_here
+```
+
+### 3. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

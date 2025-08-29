@@ -20,6 +20,7 @@ interface AccessibilityViolation {
 
 interface AccessibilityReport {
   url: string;
+  crawlMethod?: string;
   violations: AccessibilityViolation[];
   passes: Array<{
     id: string;
@@ -83,6 +84,13 @@ export default function AccessibilityReport({ report }: AccessibilityReportProps
           <CardTitle>Accessibility Test Results</CardTitle>
           <CardDescription>
             URL: {report.url} • Tested on: {new Date(report.timestamp).toLocaleString()}
+            {report.crawlMethod && (
+              <span className="ml-2">
+                • Method: <Badge variant={report.crawlMethod === 'firecrawl' ? 'default' : 'secondary'}>
+                  {report.crawlMethod === 'firecrawl' ? 'JavaScript-enabled' : 'Static HTML'}
+                </Badge>
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -138,7 +146,7 @@ export default function AccessibilityReport({ report }: AccessibilityReportProps
             Accessibility Violations
           </h3>
           
-          {report.violations.map((violation, index) => {
+          {report.violations.map((violation) => {
             const ImpactIcon = impactConfig[violation.impact].icon;
             return (
               <Card key={violation.id} className="border-l-4 border-l-destructive">
@@ -232,7 +240,7 @@ export default function AccessibilityReport({ report }: AccessibilityReportProps
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {report.passes.slice(0, 10).map((pass, index) => (
+              {report.passes.slice(0, 10).map((pass) => (
                 <div key={pass.id} className="text-sm text-muted-foreground flex items-center">
                   <CheckCircle className="mr-2 h-3 w-3 text-green-600 flex-shrink-0" />
                   {pass.help}
