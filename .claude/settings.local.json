@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(npm run build:*)",
+      "Bash(NODE_ENV=production npx next build --no-lint --no-mangling)"
     ],
     "deny": [],
     "ask": []

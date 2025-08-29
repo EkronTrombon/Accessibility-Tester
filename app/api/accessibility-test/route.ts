@@ -601,8 +601,7 @@ export async function POST(request: NextRequest) {
         'Accept-Encoding': 'gzip, deflate',
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
-      },
-      timeout: 15000
+      }
     });
 
     if (!response.ok) {
@@ -634,32 +633,32 @@ export async function POST(request: NextRequest) {
     // Format the response
     const report = {
       url: url,
-      violations: results.violations.map(violation => ({
+      violations: results.violations.map((violation: any) => ({
         id: violation.id,
         impact: violation.impact,
         description: violation.description,
         help: violation.help,
         helpUrl: violation.helpUrl,
         tags: violation.tags,
-        nodes: violation.nodes.map(node => ({
+        nodes: violation.nodes.map((node: any) => ({
           html: node.html,
           target: node.target,
           failureSummary: node.failureSummary || ''
         })).slice(0, 5) // Limit to first 5 nodes per violation
       })),
-      passes: results.passes.map(pass => ({
+      passes: results.passes.map((pass: any) => ({
         id: pass.id,
         description: pass.description,
         help: pass.help
       })),
-      incomplete: results.incomplete.map(incomplete => ({
+      incomplete: results.incomplete.map((incomplete: any) => ({
         id: incomplete.id,
         impact: incomplete.impact,
         description: incomplete.description,
         help: incomplete.help,
         helpUrl: incomplete.helpUrl,
         tags: incomplete.tags,
-        nodes: incomplete.nodes.map(node => ({
+        nodes: incomplete.nodes.map((node: any) => ({
           html: node.html,
           target: node.target,
           failureSummary: node.failureSummary || ''
